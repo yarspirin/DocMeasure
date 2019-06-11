@@ -10,7 +10,7 @@ import ARKit
 
 class LineNode: SCNNode {
     
-    init(from vectorA: SCNVector3, to vectorB: SCNVector3, lineColor color: UIColor) {
+    init(from vectorA: SCNVector3, to vectorB: SCNVector3, lineColor color: UIColor, unidirectional: Bool) {
         super.init()
         
         let height = self.distance(from: vectorA, to: vectorB)
@@ -22,15 +22,28 @@ class LineNode: SCNNode {
         let nodeZAlign = SCNNode()
         nodeZAlign.eulerAngles.x = Float.pi/2
         
-        let box = SCNBox(width: 0.003, height: height, length: 0.001, chamferRadius: 0)
+        let box = SCNBox(width: 0.001, height: height, length: 0.001, chamferRadius: 0.0005)
         let material = SCNMaterial()
         material.diffuse.contents = color
         box.materials = [material]
         
         let nodeLine = SCNNode(geometry: box)
         nodeLine.position.y = Float(-height/2) + 0.001
-        nodeZAlign.addChildNode(nodeLine)
         
+        let sphere = SCNSphere(radius: 0.003)
+        sphere.materials = [material]
+
+        let startSphereNode = SCNNode(geometry: sphere)
+        startSphereNode.position.y = 0.001
+        nodeZAlign.addChildNode(startSphereNode)
+
+        if !unidirectional {
+            let endSphereNode = SCNNode(geometry: sphere)
+            endSphereNode.position.y = -Float(height) + 0.001
+            nodeZAlign.addChildNode(endSphereNode)
+        }
+        
+        nodeZAlign.addChildNode(nodeLine)
         self.addChildNode(nodeZAlign)
         
         self.constraints = [SCNLookAtConstraint(target: nodeVector2)]
